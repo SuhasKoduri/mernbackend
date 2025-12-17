@@ -12,7 +12,7 @@ let add=async(req,res)=>{
         }
         else
         {
-            let hashcode=await bcrypt.hash(req.body.pwd,process.env.rot)
+            let hashcode=await bcrypt.hash(req.body.pwd,Number(process.env.rot))
             let data=new em({...req.body,pwd:hashcode})
             await data.save()
             res.json({"msg":"User Registration Successful"})
