@@ -18,7 +18,8 @@ let add=async(req,res)=>{
             res.json({"msg":"User Registration Successful"})
         }
     }
-    catch{
+    catch(err){
+        console.log(err)
         res.json({"msg":"Employee Couldn't Be Registered"})
     }
 }
