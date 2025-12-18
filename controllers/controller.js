@@ -1,8 +1,9 @@
 const em = require("../models/model")
 let bcrypt=require("bcrypt")
 let jwt=require("jsonwebtoken")
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 require('dotenv').config()
+const resend = new Resend(process.env.mailpwd);
 let add=async(req,res)=>{
     try{
         let obj=await em.findById(req.body._id)
@@ -49,44 +50,34 @@ let login=async(req,res)=>{
 }
 
 
-const transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: "suhaskoduri47@gmail.com",
-    pass: process.env.mailpwd,
-  },
-});
 
 
-let fpwd=async(req,res)=>{
-    let obj=await em.findById(req.params.id)
-    if(obj)
-    {
-        let num=Math.floor(Math.random()*100000)+""
+
+let fpwd = async (req, res) => {
+  try {
+    let obj = await em.findById(req.params.id);
+    if (!obj) {
+      return res.json({ msg: "Check Your Mail ID" });
+    }
+
+    let num=Math.floor(Math.random()*100000)+""
         let otp=num.padEnd(5,"0")
         await em.findByIdAndUpdate(obj._id,{"otp":otp})
-        
-        const info = await transporter.sendMail({
-            from: '"<noreply>" <suhaskoduri47@gmail.com>',
-            to: obj._id,
-            subject: "OTP For Verification",
-            html: otp
-        });
 
-        if(info.accepted.length>0)
-        {
-            res.json({"msg":"OTP Sent"})
-        }
-        else{
-            res.json({"msg":"OTP Couldn't be sent"})
-        }
-    }
-    else{
-        res.json({"msg":"Check Your Mail ID"})
-    }
-}
+    await resend.emails.send({
+      from: "onboarding@resend.dev", // works instantly
+      to: obj._id,
+      subject: "OTP For Verification",
+      html: `<h2>Your OTP is ${otp}</h2>`
+    });
+
+    res.json({ msg: "OTP Sent" });
+  } catch (err) {
+    console.error("OTP MAIL ERROR:", err);
+    res.status(500).json({ msg: "OTP Couldn't be sent" });
+  }
+};
+
 
 
 let vpwd=async(req,res)=>{
