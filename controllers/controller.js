@@ -3,7 +3,6 @@ let bcrypt=require("bcrypt")
 let jwt=require("jsonwebtoken")
 let nodemailer = require("nodemailer")
 require('dotenv').config()
-sgMail.setApiKey(process.env.mailpwd);
 let add=async(req,res)=>{
     try{
         let obj=await em.findById(req.body._id)
