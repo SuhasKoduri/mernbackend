@@ -50,7 +50,7 @@ let login=async(req,res)=>{
 
 
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
+  host: "smtp-relay.brevo.com",
   port: 465,
   secure: true,
   auth: {
