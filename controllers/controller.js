@@ -1,7 +1,7 @@
 const em = require("../models/model")
 let bcrypt=require("bcrypt")
 let jwt=require("jsonwebtoken")
-let nodemailer = require("nodemailer")
+const nodemailer = require("nodemailer");
 require('dotenv').config()
 let add=async(req,res)=>{
     try{
@@ -50,41 +50,43 @@ let login=async(req,res)=>{
 
 
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: false,
+  host: "smtp-relay.brevo.com",
+  port: 465,
+  secure: true,
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    user: "suhaskoduri47@gmail.com",
+    pass: process.env.mailpwd,
   },
 });
 
-const fpwd = async (req, res) => {
-  try {
-    const obj = await em.findById(req.params.id);
-    if (!obj) {
-      return res.json({ msg: "Check Your Mail ID" });
+
+let fpwd=async(req,res)=>{
+    let obj=await em.findById(req.params.id)
+    if(obj)
+    {
+        let num=Math.floor(Math.random()*100000)+""
+        let otp=num.padEnd(5,"0")
+        await em.findByIdAndUpdate(obj._id,{"otp":otp})
+        
+        const info = await transporter.sendMail({
+            from: '"<noreply>" <suhaskoduri47@gmail.com>',
+            to: obj._id,
+            subject: "OTP For Verification",
+            html: otp
+        });
+
+        if(info.accepted.length>0)
+        {
+            res.json({"msg":"OTP Sent"})
+        }
+        else{
+            res.json({"msg":"OTP Couldn't be sent"})
+        }
     }
-
-    // OTP generation (your method)
-    const num = Math.floor(Math.random() * 100000).toString();
-    const otp = num.padEnd(5, "0");
-
-    await em.findByIdAndUpdate(obj._id, { otp });
-
-    await transporter.sendMail({
-      from: "no-reply@brevo.com", // sender email must be added in Brevo
-      to: obj._id,               // email stored as _id
-      subject: "OTP For Verification",
-      html: `<h2>Your OTP is ${otp}</h2>`,
-    });
-
-    res.json({ msg: "OTP Sent" });
-  } catch (err) {
-    console.error("OTP MAIL ERROR:", err);
-    res.status(500).json({ msg: "OTP Couldn't be sent" });
-  }
-};
+    else{
+        res.json({"msg":"Check Your Mail ID"})
+    }
+}
 
 
 let vpwd=async(req,res)=>{
