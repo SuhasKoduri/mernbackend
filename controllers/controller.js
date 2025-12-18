@@ -56,7 +56,7 @@ let login=async(req,res)=>{
 const fpwd = async (req, res) => {
   try {
     const obj = await em.findById(req.params.id);
-    if (!obj) return res.status(404).json({ msg: "Check Your Mail ID" });
+    if (!obj) return res.json({ msg: "Check Your Mail ID" });
 
     const num = Math.floor(Math.random() * 100000).toString();
     const otp = num.padEnd(5, "0");
