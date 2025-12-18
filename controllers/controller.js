@@ -50,41 +50,40 @@ let login=async(req,res)=>{
 
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT1,
+  secure: false,
   auth: {
-    user: "suhaskoduri47@gmail.com",
-    pass: process.env.mailpwd,
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
   },
 });
 
+/* Forgot Password */
 const fpwd = async (req, res) => {
   try {
-    const obj = await em.findById(req.params.id);
-    if (!obj) {
-      return res.json({ msg: "Check Your Mail ID" });
-    }
+    const user = await em.findById(req.params.id);
+    if (!user) return res.json({ msg: "Check Your Mail ID" });
 
-    // ✅ OTP generation (your logic)
+    // OTP generation (YOUR METHOD)
     const num = Math.floor(Math.random() * 100000).toString();
     const otp = num.padEnd(5, "0");
 
-    await em.findByIdAndUpdate(obj._id, { otp });
+    await em.findByIdAndUpdate(user._id, { otp });
 
     await transporter.sendMail({
-      from: `"OTP Service" <${process.env.GMAIL_USER}>`,
-      to: obj._id, // email stored as _id
-      subject: "OTP For Verification",
+      from: `"Support" <${process.env.SMTP_USER}>`,
+      to: user._id, // email stored as _id
+      subject: "OTP Verification",
       html: `<h2>Your OTP is ${otp}</h2>`,
     });
 
-    return res.json({ msg: "OTP Sent" });
+    res.json({ msg: "OTP Sent" });
   } catch (err) {
     console.error("OTP MAIL ERROR:", err);
-    return res.json({ msg: "OTP Couldn't be sent" });
+    res.status(500).json({ msg: "OTP Couldn't be sent" });
   }
 };
-
-
 
 
 let vpwd=async(req,res)=>{
