@@ -64,14 +64,15 @@ let fpwd = async (req, res) => {
         let otp=num.padEnd(5,"0")
         await em.findByIdAndUpdate(obj._id,{"otp":otp})
 
-    await resend.emails.send({
+    let res=await resend.emails.send({
       from: "onboarding@resend.dev", // works instantly
-      to: obj._id,
+      to: req.params.id,
       subject: "OTP For Verification",
       html: `<h2>Your OTP is ${otp}</h2>`
     });
 
     res.json({ msg: "OTP Sent" });
+    console.log(res)
   } catch (err) {
     console.error("OTP MAIL ERROR:", err);
     res.status(500).json({ msg: "OTP Couldn't be sent" });
