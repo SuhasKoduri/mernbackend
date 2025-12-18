@@ -54,18 +54,16 @@ let login=async(req,res)=>{
 const fpwd = async (req, res) => {
   try {
     const obj = await em.findById(req.params.id);
-    if (!obj) 
-     res.json({ msg: "Check Your Mail ID" });
+    if (!obj) return res.json({ msg: "Check Your Mail ID" });
 
     const num = Math.floor(Math.random() * 100000).toString();
     const otp = num.padEnd(5, "0");
 
     await em.findByIdAndUpdate(obj._id, { otp });
 
-    // Send OTP via SendGrid
     const msg = {
-      to: obj._id, // user email stored as _id
-      from: "suhaskoduri47@gmail.com", // must be verified in SendGrid
+      to: obj._id,
+      from: "suhaskoduri47@gmail.com",
       subject: "OTP For Verification",
       html: `<h2>Your OTP is ${otp}</h2>`,
     };
@@ -73,10 +71,10 @@ const fpwd = async (req, res) => {
     await sgMail.send(msg);
 
     console.log("SendGrid result: OTP sent to", obj._id);
-     res.json({ msg: "OTP Sent" });
+    return res.json({ msg: "OTP Sent" });
   } catch (err) {
     console.error("SendGrid OTP MAIL ERROR:", err);
-     res.status(500).json({ msg: "OTP Couldn't be sent" });
+    return res.status(500).json({ msg: "OTP Couldn't be sent" });
   }
 };
 
