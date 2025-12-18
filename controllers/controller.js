@@ -2,8 +2,8 @@ const em = require("../models/model")
 let bcrypt=require("bcrypt")
 let jwt=require("jsonwebtoken")
 let sgMail = require("@sendgrid/mail")
-sgMail.setApiKey(process.env.mailpwd);
 require('dotenv').config()
+sgMail.setApiKey(process.env.mailpwd);
 let add=async(req,res)=>{
     try{
         let obj=await em.findById(req.body._id)
