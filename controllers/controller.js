@@ -65,7 +65,7 @@ const fpwd = async (req, res) => {
 
     // Send OTP via Resend
     const result = await resend.emails.send({
-      from: "onboarding@resend.dev",  // or verified sender
+      from: "suhaskoduri47@gmail.com",  // or verified sender
       to: obj._id,                  // must be valid email
       subject: "OTP For Verification",
       html: `<h2>Your OTP is ${otp}</h2>`
