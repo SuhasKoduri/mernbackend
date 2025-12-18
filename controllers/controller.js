@@ -1,7 +1,7 @@
 const em = require("../models/model")
 let bcrypt=require("bcrypt")
 let jwt=require("jsonwebtoken")
-let sgMail = require("@sendgrid/mail")
+let nodemailer = require("nodemailer")
 require('dotenv').config()
 sgMail.setApiKey(process.env.mailpwd);
 let add=async(req,res)=>{
@@ -50,33 +50,41 @@ let login=async(req,res)=>{
 }
 
 
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "suhaskoduri47@gmail.com",
+    pass: process.env.mailpwd,
+  },
+});
 
 const fpwd = async (req, res) => {
   try {
     const obj = await em.findById(req.params.id);
-    if (!obj) return res.json({ msg: "Check Your Mail ID" });
+    if (!obj) {
+      return res.json({ msg: "Check Your Mail ID" });
+    }
 
+    // ✅ OTP generation (your logic)
     const num = Math.floor(Math.random() * 100000).toString();
     const otp = num.padEnd(5, "0");
 
     await em.findByIdAndUpdate(obj._id, { otp });
 
-    const msg = {
-      to: obj._id,
-      from: "suhaskoduri47@gmail.com",
+    await transporter.sendMail({
+      from: `"OTP Service" <${process.env.GMAIL_USER}>`,
+      to: obj._id, // email stored as _id
       subject: "OTP For Verification",
       html: `<h2>Your OTP is ${otp}</h2>`,
-    };
+    });
 
-    await sgMail.send(msg);
-
-    console.log("SendGrid result: OTP sent to", obj._id);
     return res.json({ msg: "OTP Sent" });
   } catch (err) {
-    console.error("SendGrid OTP MAIL ERROR:", err);
-    return res.status(500).json({ msg: "OTP Couldn't be sent" });
+    console.error("OTP MAIL ERROR:", err);
+    return res.json({ msg: "OTP Couldn't be sent" });
   }
 };
+
 
 
 
