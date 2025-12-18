@@ -53,29 +53,30 @@ let login=async(req,res)=>{
 
 
 
-let fpwd = async (req, res) => {
+const fpwd = async (req, res) => {
   try {
-    let obj = await em.findById(req.params.id);
-    if (!obj) {
-      return res.json({ msg: "Check Your Mail ID" });
-    }
+    const obj = await em.findById(req.params.id);
+    if (!obj) return res.status(404).json({ msg: "Check Your Mail ID" });
 
-    let num=Math.floor(Math.random()*100000)+""
-        let otp=num.padEnd(5,"0")
-        await em.findByIdAndUpdate(obj._id,{"otp":otp})
+    const num = Math.floor(Math.random() * 100000).toString();
+    const otp = num.padEnd(5, "0");
 
-    let res=await resend.emails.send({
-      from: "onboarding@resend.dev", // works instantly
-      to: req.params.id,
+    await em.findByIdAndUpdate(obj._id, { otp });
+
+    // Send OTP via Resend
+    const result = await resend.emails.send({
+      from: "onboarding@resend.dev",  // or verified sender
+      to: obj.email,                  // must be valid email
       subject: "OTP For Verification",
       html: `<h2>Your OTP is ${otp}</h2>`
     });
 
-    res.json({ msg: "OTP Sent" });
-    console.log(res)
+    console.log("Resend result:", result);
+    return res.json({ msg: "OTP Sent" });
+
   } catch (err) {
     console.error("OTP MAIL ERROR:", err);
-    res.status(500).json({ msg: "OTP Couldn't be sent" });
+    return res.json({ msg: "OTP Couldn't be sent" });
   }
 };
 
